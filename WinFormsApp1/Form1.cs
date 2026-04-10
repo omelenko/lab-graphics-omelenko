@@ -1,7 +1,5 @@
-using Microsoft.VisualBasic.Logging;
+using System.Drawing.Drawing2D;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace WinFormsApp1;
 
@@ -23,12 +21,39 @@ public partial class Form1 : Form
     private PointF lineStart = new Point(0, 0);
     private PointF lineEnd = new Point(0, 0);
     private PointF Result;
-    // task 4
-    private Polyhedron polyhedron = new Polyhedron();
+    // task 4-6
+    private PolyhedronV1 polyhedron = new PolyhedronV1();
+    // task 6
+    private double d = 200;
+    // task 7.1
+    private float[] topHorizon;
+    private float[] bottomHorizon;
+    private int stepX = 10;
+    private int stepY = 10;
+    private float pointA = 10.0f;
+    private float pointB = 10.0f;
+    private float offsetX = 0;
+    private float offsetY = 0;
     public Form1()
     {
         InitializeComponent();
         genericFigure = new GenericFigure();
+    }
+    private void InvalidateAll()
+    {
+        pictureBox1.Invalidate();
+        pictureBox2.Invalidate();
+        pictureBox3.Invalidate();
+        pictureBox4.Invalidate();
+        pictureBox5.Invalidate();
+        pictureBox6.Invalidate();
+        pictureBox7.Invalidate();
+        pictureBox8.Invalidate();
+    }
+    private void clearButton_Click(object sender, EventArgs e)
+    {
+        genericFigure.Clear();
+        InvalidateAll();
     }
     private void button1_Click(object sender, EventArgs e)
     {
@@ -78,49 +103,10 @@ public partial class Form1 : Form
 
         pictureBox1.Image = bmp;
     }
-
     private float Function(float x)
     {
         return x * x;
     }
-
-    private float GetMaxY()
-    {
-        float maxY = float.MinValue;
-        for (float x = a; x <= b; x += h)
-        {
-            maxY = Math.Max(maxY, Function(x));
-        }
-        return maxY;
-    }
-
-    private float GetMinY()
-    {
-        float minY = float.MaxValue;
-        for (float x = a; x <= b; x += h)
-        {
-            minY = Math.Min(minY, Function(x));
-        }
-        return minY;
-    }
-
-    private void button2_Click(object sender, EventArgs e)
-    {
-        scaleX++;
-        scaleY++;
-        button1_Click(sender, e);
-    }
-
-    private void button3_Click(object sender, EventArgs e)
-    {
-        if (scaleX > 1 && scaleY > 1)
-        {
-            scaleX--;
-            scaleY--;
-        }
-        button1_Click(sender, e);
-    }
-
     private void button4_Click(object sender, EventArgs e)
     {
         using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -128,20 +114,9 @@ public partial class Form1 : Form
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 genericFigure.InitializeFromFile(openFileDialog.FileName);
-                pictureBox2.Invalidate();
+                InvalidateAll();
             }
         }
-    }
-
-    private void button5_Click(object sender, EventArgs e)
-    {
-        pictureBox2.Invalidate();
-    }
-
-    private void button6_Click(object sender, EventArgs e)
-    {
-        genericFigure.Clear();
-        pictureBox2.Invalidate();
     }
 
     private void pictureBox_Paint(object sender, PaintEventArgs e)
@@ -152,49 +127,59 @@ public partial class Form1 : Form
     private void button7_Click(object sender, EventArgs e)
     {
         genericFigure.Move(-cordsStep, 0);
-        pictureBox2.Invalidate();
+        InvalidateAll();
     }
 
     private void button8_Click(object sender, EventArgs e)
     {
         genericFigure.Move(0, -cordsStep);
-        pictureBox2.Invalidate();
+        InvalidateAll();
     }
 
     private void button9_Click(object sender, EventArgs e)
     {
         genericFigure.Move(0, cordsStep);
-        pictureBox2.Invalidate();
+        InvalidateAll();
     }
 
     private void button10_Click(object sender, EventArgs e)
     {
         genericFigure.Move(cordsStep, 0);
-        pictureBox2.Invalidate();
+        InvalidateAll();
     }
 
-    private void button12_Click(object sender, EventArgs e)
+    private void scaleButtonPlus_Click(object sender, EventArgs e)
     {
+        scaleX++;
+        scaleY++;
         genericFigure.Scale += 1.0f;
-        pictureBox2.Invalidate();
+        InvalidateAll();
     }
 
-    private void button11_Click(object sender, EventArgs e)
+    private void scaleButtonMinus_Click(object sender, EventArgs e)
     {
-        genericFigure.Scale -= 1.0f;
-        pictureBox2.Invalidate();
+        if (scaleX > 1 && scaleY > 1)
+        {
+            scaleX--;
+            scaleY--;
+        }
+        if (genericFigure.Scale > 1.0f)
+        {
+            genericFigure.Scale -= 1.0f;
+        }
+        InvalidateAll();
     }
 
     private void button14_Click(object sender, EventArgs e)
     {
         genericFigure.Rotate(-angleStep);
-        pictureBox2.Invalidate();
+        InvalidateAll();
     }
 
     private void button13_Click(object sender, EventArgs e)
     {
         genericFigure.Rotate(angleStep);
-        pictureBox2.Invalidate();
+        InvalidateAll();
     }
 
     private void textBox4_TextChanged(object sender, EventArgs e)
@@ -224,7 +209,7 @@ public partial class Form1 : Form
 
         Result = new PointF(2 * Centre.X - A.X, 2 * Centre.X - A.Y);
 
-        pictureBox3.Invalidate();
+        InvalidateAll();
     }
 
     private void pictureBox3_Paint(object sender, PaintEventArgs e)
@@ -283,7 +268,7 @@ public partial class Form1 : Form
             A.Y - 2 * b * factor
         );
 
-        pictureBox4.Invalidate();
+        InvalidateAll();
     }
 
     private void pictureBox4_Paint(object sender, PaintEventArgs e)
@@ -310,11 +295,6 @@ public partial class Form1 : Form
                      this.Font, brush, pt.X + 10, pt.Y);
     }
 
-    private void textBox7_TextChanged(object sender, EventArgs e)
-    {
-
-    }
-
     //3.3
     private void button27_Click(object sender, EventArgs e)
     {
@@ -323,20 +303,9 @@ public partial class Form1 : Form
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 genericFigure.InitializeFromFile(openFileDialog.FileName);
-                pictureBox5.Invalidate();
+                InvalidateAll();
             }
         }
-    }
-
-    private void button26_Click(object sender, EventArgs e)
-    {
-        pictureBox5.Invalidate();
-    }
-
-    private void button25_Click(object sender, EventArgs e)
-    {
-        genericFigure.Clear();
-        pictureBox5.Invalidate();
     }
 
     private void pictureBox5_Paint(object sender, PaintEventArgs e)
@@ -352,22 +321,10 @@ public partial class Form1 : Form
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 genericFigure.InitializeFromFile(openFileDialog.FileName);
-                pictureBox6.Invalidate();
+                InvalidateAll();
             }
         }
     }
-
-    private void button18_Click(object sender, EventArgs e)
-    {
-        pictureBox5.Invalidate();
-    }
-
-    private void button17_Click(object sender, EventArgs e)
-    {
-        genericFigure.Clear();
-        pictureBox5.Invalidate();
-    }
-
     private void pictureBox6_Paint(object sender, PaintEventArgs e)
     {
         genericFigure.BuildConvexHull(genericFigure.ControlPoints);
@@ -381,7 +338,11 @@ public partial class Form1 : Form
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 polyhedron.InitializeFromFile(openFileDialog.FileName);
-                pictureBox7.Invalidate();
+                if (float.TryParse(textBox10.Text, out float newAngleStep)) angleStep = newAngleStep;
+                else angleStep = 10;
+                if (double.TryParse(textBox11.Text, out double d)) this.d = d;
+                else this.d = 200;
+                InvalidateAll();
             }
         }
     }
@@ -389,63 +350,201 @@ public partial class Form1 : Form
     private void button21_Click(object sender, EventArgs e)
     {
         polyhedron.Rotate(-angleStep, "X");
-        pictureBox7.Invalidate();
+        InvalidateAll();
     }
 
     private void button20_Click(object sender, EventArgs e)
     {
         polyhedron.Rotate(-angleStep, "X");
-        pictureBox7.Invalidate();
+        InvalidateAll();
     }
 
     private void button23_Click(object sender, EventArgs e)
     {
         polyhedron.Scale(1.1);
-        pictureBox7.Invalidate();
+        InvalidateAll();
     }
 
     private void button22_Click(object sender, EventArgs e)
     {
         polyhedron.Scale(0.9);
-        pictureBox7.Invalidate();
+        InvalidateAll();
     }
 
     private void pictureBox7_Paint(object sender, PaintEventArgs e)
     {
         e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
         if (polyhedron.Vertices != null)
-            polyhedron.Draw(e.Graphics, pictureBox7.Width, pictureBox7.Height);
+            // 6
+            if (checkBox2.Checked)
+                polyhedron.DrawPerspective(e.Graphics, pictureBox7.Width, pictureBox7.Height, d);
+            // 7
+            else if(checkBox3.Checked)
+                polyhedron.DrawWithBackFaceCulling(e.Graphics, pictureBox7.Width, pictureBox7.Height, scaleX, scaleY);
+            else
+                polyhedron.Draw(e.Graphics, pictureBox7.Width, pictureBox7.Height);
     }
 
     private void button30_Click(object sender, EventArgs e)
     {
         polyhedron.Rotate(-angleStep, "Y");
-        pictureBox7.Invalidate();
+        InvalidateAll();
     }
 
     private void button29_Click(object sender, EventArgs e)
     {
         polyhedron.Rotate(angleStep, "X");
-        pictureBox7.Invalidate();
+        InvalidateAll();
     }
 
     private void button28_Click(object sender, EventArgs e)
     {
         polyhedron.Rotate(-angleStep, "X");
-        pictureBox7.Invalidate();
+        InvalidateAll();
     }
 
     private void button24_Click(object sender, EventArgs e)
     {
         polyhedron.Rotate(angleStep, "Y");
-        pictureBox7.Invalidate();
+        InvalidateAll();
+    }
+    // 5
+    private void checkBox1_CheckedChanged(object sender, EventArgs e)
+    {
+        if (checkBox1.Checked)
+        {
+            checkBox1.Text = "Лаб 5";
+            polyhedron = new PolyhedronV2();
+        }
+        else
+        {
+            checkBox1.Text = "Лаб 4";
+            polyhedron = new PolyhedronV1();
+        }
+    }
+    // 6
+    private void checkBox2_CheckedChanged(object sender, EventArgs e)
+    {
+        if (checkBox2.Checked)
+        {
+            textBox11.Enabled = true;
+            textBox11.Visible = true;
+            label11.Enabled = true;
+            label11.Visible = true;
+        }
+        else
+        {
+            textBox11.Enabled = true;
+            textBox11.Visible = true;
+            label11.Enabled = true;
+            label11.Visible = true;
+        }
     }
 
-    private void textBox10_TextChanged(object sender, EventArgs e)
+    // 7.1
+    private float CalculateFunction(float x, float y)
     {
-        if (float.TryParse(textBox10.Text, out float newAngleStep))
+        if (comboBox1.SelectedIndex == 0)
         {
-            angleStep = newAngleStep;
+            // пік посередині
+            float cx = x - pointA / 2;
+            float cy = y - pointB / 2;
+            double r = Math.Sqrt(cx * cx + cy * cy);
+
+            return (float)(5 * Math.Sin(r) / (r + 1)); // 5sin(r)/r+1
         }
+        else
+        {
+            return (float)(Math.Sin(x) + Math.Cos(y)); // sin(x) + cos(y)
+        }
+    }
+    private PointF Project(float x, float y, float z)
+    {
+        float x0 = pictureBox8.Width / 2 + offsetX;
+        float y0 = pictureBox8.Height / 2 + offsetY; 
+        double angle = Math.PI / 4; // 45
+
+        float x_screen = x0 + (x - y * (float)Math.Cos(angle)) * scaleX;
+        float y_screen = y0 - (z + y * (float)Math.Sin(angle)) * scaleY;
+
+        return new PointF(x_screen, y_screen);
+    }
+    private void DrawFloatingHorizon(Graphics g, int width, int height)
+    {
+        topHorizon = new float[width];
+        bottomHorizon = new float[width];
+        Pen penTop = new Pen(Color.Blue, 2);
+        Pen penBottom = new Pen(Color.Red, 2);
+
+        for (int i = 0; i < width; i++)
+        {
+            topHorizon[i] = height;
+            bottomHorizon[i] = 0;
+        }
+
+        for (float y = 0; y <= pointB; y += stepY)
+        {
+            PointF prevPoint = Point.Empty;
+
+            for (float x = 0; x <= pointA; x += stepX)
+            {
+                float z = CalculateFunction(x, y);
+                PointF screenPt = Project(x, y, z);
+
+                int xIdx = (int)screenPt.X;
+                if (xIdx >= 0 && xIdx < width)
+                {
+                    if (screenPt.Y < topHorizon[xIdx])
+                    {
+                        if (!prevPoint.IsEmpty) g.DrawLine(penTop, prevPoint, screenPt);
+                        topHorizon[xIdx] = screenPt.Y;
+                    }
+                    else if (screenPt.Y > bottomHorizon[xIdx])
+                    {
+                        if (!prevPoint.IsEmpty) g.DrawLine(penBottom, prevPoint, screenPt);
+                        bottomHorizon[xIdx] = screenPt.Y;
+                    }
+                }
+                prevPoint = screenPt;
+            }
+        }
+    }
+
+    private void button20_Click_1(object sender, EventArgs e)
+    {
+        pointA = (float)numericUpDown4.Value;
+        pointB = (float)numericUpDown3.Value;
+        stepX = numericUpDown1.Value > 0 ? (int)numericUpDown1.Value : stepX;
+        stepY = numericUpDown2.Value > 0 ? (int)numericUpDown2.Value : stepY;
+        InvalidateAll();
+    }
+
+    private void pictureBox8_Paint(object sender, PaintEventArgs e)
+    {
+        e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        DrawFloatingHorizon(e.Graphics, pictureBox8.Width, pictureBox8.Height);
+    }
+    private void btnUp_Click(object sender, EventArgs e)
+    {
+        offsetY -= cordsStep;
+        InvalidateAll();
+    }
+
+    private void btnDown_Click(object sender, EventArgs e)
+    {
+        offsetY += cordsStep;
+        InvalidateAll();
+    }
+
+    private void btnLeft_Click(object sender, EventArgs e)
+    {
+        offsetX -= cordsStep;
+        InvalidateAll();
+    }
+
+    private void btnRight_Click(object sender, EventArgs e)
+    {
+        offsetX += cordsStep;
+        InvalidateAll();
     }
 }
